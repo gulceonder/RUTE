@@ -1,0 +1,53 @@
+#include <stdio.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <cstring>
+#define MAX 10
+  
+// structure for message queue
+struct mesg_buffer {
+    long mesg_type;
+    char mesg_text[100];
+} message;
+  
+int main()
+{
+	char str1[100];
+	char dosya1[50];
+	sprintf(dosya1,"1.txt");
+	FILE *fp1;
+	fp1 = fopen(dosya1, "w");
+	if(fp1==NULL){
+	printf("could not oen file");
+	return 1;
+	}
+	fprintf(fp1, "Dosya 1'in içeriğidir.");
+	fclose(fp1);
+	fp1 = fopen(dosya1, "r");
+
+	fscanf(fp1, "%[^\n]", str1);
+	fclose(fp1);
+
+    key_t key;
+    int msgid;
+  
+    // ftok to generate unique key
+    key = ftok("progfile", 65);
+  
+    // msgget creates a message queue
+    // and returns identifier
+    msgid = msgget(key, 0666 | IPC_CREAT);
+    message.mesg_type = 1;
+  
+    printf("Write Data : ");
+
+   
+  strcpy(message.mesg_text, str1);
+    // msgsnd to send message
+    msgsnd(msgid, &message, sizeof(message), 0);
+  
+    // display the message
+    printf("Data send is : %s \n", message.mesg_text);
+  
+    return 0;
+}

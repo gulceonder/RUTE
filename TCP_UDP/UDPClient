@@ -1,0 +1,58 @@
+#include <iostream>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <string.h>
+#include<string>
+#include <unistd.h>
+#include <stdlib.h>
+using namespace std;
+
+void printError(char* msg)
+{
+    perror(msg);
+    exit(0);
+}
+
+int main(int argc, char *argv[]) //
+{
+    int sock, n;
+    socklen_t length;
+    struct sockaddr_in server;
+    struct sockaddr_in from;
+    struct hostent *ht;
+    char buffer[512];
+
+    if(argc!=3)
+    {
+        fprintf(stderr,"No port error");
+    }
+
+    sock= socket(AF_INET, SOCK_DGRAM,0); //open socket SOCK_DGRAM for  udp
+    if(sock<0)
+    {
+       printf("Opening Socket Error!");
+    }
+    //now fill the socket
+
+    server.sin_family=AF_INET; //addresses from the internet (ip addresses
+    ht=gethostbyname(argv[1]);
+
+    server.sin_addr.s_addr=INADDR_ANY; //socket accept connection to all the ips in the machine
+    server.sin_port= htons(atoi(argv[2]));//stoi converts string tye to integer type
+
+    bcopy((char*)ht->h_addr,(char*)&server.sin_addr,ht->h_length);
+    length=sizeof(struct sockaddr_in);
+    printf("EnterMessage");
+    bzero(buffer,512);
+    fgets(buffer,511,stdin);
+
+
+    n=sendto(sock,(const char *)buffer,strlen(buffer),MSG_CONFIRM,(const struct sockaddr *)&server,sizeof(server));
+
+    n=recvfrom(sock,(char*)buffer,strlen(buffer),0,( struct sockaddr *)&from,&length);
+    write(1,"Received and ack: ",17);
+    write(1,buffer,n);
+    return 0;
+}

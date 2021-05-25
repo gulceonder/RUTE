@@ -1,0 +1,77 @@
+#include <iostream>
+#include <stdio.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <unistd.h>
+using namespace std;
+
+void printError(char* msg)
+{
+    printf(msg);
+    exit(0);
+}
+
+int main(int argc, char *argv[]) //
+{
+    int sock, length,n;
+    socklen_t fromlen;
+    struct sockaddr_in server;
+    struct sockaddr_in from;
+    char buf[1024];
+
+    if(argc<2)
+    {
+        fprintf(stderr,"No port error");
+    }
+
+    sock= socket(AF_INET, SOCK_DGRAM,0); //open socket SOCK_DGRAM for  udp
+    printf("31 /n");
+    if(sock<0)
+    {
+        printf("Opening Socket Error!");
+    }
+    //now fill the socket
+    length = sizeof(server);
+    bzero(&server,length); //cleean it by filling with 0's
+
+    server.sin_family=AF_INET; //addresses from the internet (ip addresses
+    server.sin_addr.s_addr=INADDR_ANY; //socket accept connection to all the ips in the machine
+    server.sin_port= htons(atoi(argv[1]));//atoi converts string tye to integer type
+    //bind socket to address and port number
+    printf("43 /n");
+    if(bind(sock, (struct sockaddr*)&server, length)<0)
+    {
+        printf("Binding Error");
+    }
+
+    printf("48 /n");
+
+
+    fromlen=sizeof(struct sockaddr_in);
+     while(true)
+     {      printf("53 /n");
+         n=recvfrom(sock,buf,1024,0,(struct sockaddr *)&from, &fromlen);//recieve data on a socket whether or not it is connection-oriented.
+         if(n<0)
+         {
+             printf("recvfrom Errror");
+         }
+
+         write(1,"Recieved a datagram: ",30);//write functiın writes up to 'count' bytes fromthe buffer
+                                            //starting at buf to the file referred by the file descriptor.
+         write(1,buf,n);
+         n=sendto(sock,"Recieved message",1024,0,(struct sockaddr*)&from, fromlen);
+
+        if(n<0)
+         {
+             printf("recvfrom Errror");
+         }
+
+
+              }
+
+
+    return 0;
+}
